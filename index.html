@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#fafaf8" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Paintings" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<title>Paintings</title>
+<style>
+  :root {
+    --bg: #fafaf8;
+    --surface: #ffffff;
+    --surface-2: #f2f1ed;
+    --text: #1a1a1a;
+    --text-2: #6b6b6b;
+    --text-3: #9a9a9a;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-2: rgba(0, 0, 0, 0.16);
+    --accent: #1a1a1a;
+    --danger: #a63a2c;
+    --info-bg: #eef2f7;
+    --info-text: #2c4a6b;
+    --radius: 6px;
+    --radius-lg: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  #app { max-width: 1100px; margin: 0 auto; padding: 1.25rem 1rem; }
+  button {
+    font: inherit;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:hover { background: var(--surface-2); }
+  button:active { transform: scale(0.98); }
+  button.primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    font-weight: 500;
+  }
+  button.primary:hover { opacity: 0.88; background: var(--accent); }
+  button.danger { color: var(--danger); border-color: rgba(166, 58, 44, 0.25); }
+  button.icon-btn { padding: 8px 10px; display: inline-flex; align-items: center; gap: 6px; }
+  input[type="text"], input[type="password"], input[type="number"], input[type="date"],
+  textarea, select {
+    font: inherit;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    width: 100%;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--border-2);
+  }
+  textarea { resize: vertical; font-family: inherit; min-height: 64px; }
+  label.field-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    margin-bottom: 5px;
+    letter-spacing: 0.01em;
+  }
+  .hint { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+  .muted { color: var(--text-2); }
+  .icon {
+    width: 16px; height: 16px; stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+  .hidden { display: none !important; }
+
+  /* ---- Password gate ---- */
+  .gate {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .gate-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2.25rem 1.5rem;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+  }
+  .gate h1 { font-size: 22px; font-weight: 500; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .gate p { color: var(--text-2); font-size: 14px; margin: 0 0 22px; }
+  .gate-error { color: var(--danger); font-size: 12px; min-height: 16px; margin-top: 12px; }
+
+  /* ---- Header ---- */
+  .header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header h1 { font-size: 26px; font-weight: 500; margin: 0; letter-spacing: -0.02em; }
+  .header .sub { font-size: 13px; color: var(--text-2); margin: 2px 0 0; }
+
+  /* ---- Controls bar ---- */
+  .controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .search-wrap { position: relative; flex: 1 1 260px; min-width: 200px; }
+  .search-wrap .icon {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%); color: var(--text-3); pointer-events: none;
+  }
+  .search-wrap input { padding-left: 38px; }
+  .view-toggle {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .view-toggle button {
+    border: none; border-radius: 0; padding: 9px 12px;
+    background: transparent;
+  }
+  .view-toggle button.active { background: var(--surface-2); }
+
+  /* ---- Filter section ---- */
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .filter-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .filter-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-3); margin-right: 4px; font-weight: 500;
+  }
+  .pill {
+    background: transparent; color: var(--text-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .pill.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  /* ---- Grid view ---- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  }
+  .grid-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .grid-item:hover { border-color: var(--border-2); }
+  .grid-item:active { transform: scale(0.99); }
+  .grid-thumb {
+    aspect-ratio: 1;
+    background: var(--surface-2);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .grid-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .grid-thumb .count-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(0,0,0,0.65); color: white;
+    font-size: 11px; padding: 2px 7px; border-radius: 999px;
+    display: flex; align-items: center; gap: 3px;
+    backdrop-filter: blur(4px);
+  }
+  .grid-meta { padding: 10px 12px; }
+  .grid-meta .t1 {
+    font-size: 14px; font-weight: 500; margin: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .grid-meta .t2 { font-size: 12px; color: var(--text-2); margin: 2px 0 0; }
+
+  /* ---- List view ---- */
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .list-item {
+    display: flex; gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    cursor: pointer;
+    align-items: center;
+  }
+  .list-thumb {
+    width: 60px; height: 60px; flex-shrink: 0;
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .list-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .list-meta { flex: 1; min-width: 0; }
+  .list-meta .t1 { font-size: 14px; font-weight: 500; margin: 0; }
+  .list-meta .t2 {
+    font-size: 12px; color: var(--text-2); margin: 2px 0 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .list-meta .badges { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .badge {
+    font-size: 10px; padding: 1px 6px; border-radius: 3px;
+    background: var(--surface-2); color: var(--text-2);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .badge.sold { background: #ebe0d8; color: #6b4a2d; }
+  .badge.available { background: #dce8dd; color: #2d5a35; }
+
+  /* ---- Empty state ---- */
+  .empty {
+    background: var(--surface);
+    border: 1px dashed var(--border-2);
+    border-radius: var(--radius-lg);
+    padding: 3.5rem 1rem;
+    text-align: center;
+  }
+  .empty svg { width: 36px; height: 36px; color: var(--text-3); margin-bottom: 14px; }
+  .empty .t1 { font-size: 15px; font-weight: 500; margin: 0 0 6px; }
+  .empty .t2 { font-size: 13px; color: var(--text-2); margin: 0 0 20px; }
+
+  /* ---- Modal ---- */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 100;
+    animation: fadeIn 0.15s ease-out;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    max-width: 760px;
+    width: 100%;
+    max-height: 92vh;
+    max-height: 92dvh;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.18s ease-out;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: var(--surface);
+    z-index: 2;
+  }
+  .modal-header h2 { font-size: 16px; font-weight: 500; margin: 0; }
+  .modal-body { padding: 1.25rem 1.5rem 1.75rem; }
+  @media (max-width: 560px) {
+    .modal-body { padding: 1rem 1.1rem 1.5rem; }
+  }
+
+  /* ---- Detail view images ---- */
+  .image-gallery {
+    background: var(--surface-2);
+    padding: 16px;
+  }
+  .main-image-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  .main-image-wrap img {
+    max-width: 100%;
+    max-height: 58vh;
+    max-height: 58dvh;
+    object-fit: contain;
+    border-radius: var(--radius);
+    background: white;
+  }
+  .thumb-strip {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .thumb-strip .thumb {
+    width: 50px; height: 50px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background: white;
+  }
+  .thumb-strip .thumb.active { border-color: var(--accent); }
+  .thumb-strip .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* ---- Detail rows ---- */
+  .detail-title { font-size: 22px; font-weight: 500; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .detail-subtitle { font-size: 13px; color: var(--text-2); margin: 0 0 18px; font-style: italic; }
+  .detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row:last-of-type { border-bottom: none; }
+  .detail-row .icon { color: var(--text-3); margin-top: 2px; }
+  .detail-row .lbl { color: var(--text-2); min-width: 100px; flex-shrink: 0; }
+  .detail-row .val { color: var(--text); word-break: break-word; flex: 1; }
+  .detail-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag-chip {
+    background: var(--surface-2);
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+  .tag-chip.info { background: var(--info-bg); color: var(--info-text); }
+  .detail-section {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  .detail-section .lbl {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-3);
+    margin: 0 0 8px;
+    font-weight: 500;
+  }
+  .detail-section .body {
+    font-size: 14px;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.65;
+    white-space: pre-wrap;
+  }
+
+  /* ---- Form ---- */
+  .form-grid { display: flex; flex-direction: column; gap: 14px; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px) {
+    .form-row-2, .form-row-3 { grid-template-columns: 1fr; }
+  }
+  .image-upload-area {
+    background: var(--surface-2);
+    border: 1px dashed var(--border-2);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .image-upload-area:hover { background: #ecebe7; }
+  .image-upload-area svg {
+    width: 24px; height: 24px; margin-bottom: 6px; color: var(--text-3);
+  }
+  .image-upload-area p { margin: 0; font-size: 13px; color: var(--text-2); }
+  .image-upload-area .sub-hint { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+
+  .image-thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .image-thumb-item {
+    position: relative;
+    aspect-ratio: 1;
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 2px solid transparent;
+  }
+  .image-thumb-item.primary { border-color: var(--accent); }
+  .image-thumb-item img { width: 100%; height: 100%; object-fit: cover; }
+  .image-thumb-item .primary-label {
+    position: absolute; top: 4px; left: 4px;
+    background: var(--accent); color: var(--bg);
+    font-size: 9px; padding: 1px 5px; border-radius: 3px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .image-thumb-item .actions {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    padding: 16px 4px 4px;
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .image-thumb-item:hover .actions,
+  .image-thumb-item .actions.always { opacity: 1; }
+  .image-thumb-item .actions button {
+    border: none;
+    background: rgba(255,255,255,0.9);
+    color: var(--text);
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    min-width: 0;
+  }
+  .image-thumb-item .actions button:hover { background: white; }
+
+  .form-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 14px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ---- Menu ---- */
+  .menu-wrap { position: relative; }
+  .menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    min-width: 200px;
+    padding: 4px;
+    z-index: 10;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+  .menu button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    border-radius: 4px;
+    padding: 9px 10px;
+    font-size: 13px;
+    background: transparent;
+  }
+  .menu button:hover { background: var(--surface-2); }
+  .menu .divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* ---- Storage meter ---- */
+  .storage-meter {
+    font-size: 11px;
+    color: var(--text-3);
+    text-align: right;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ---- Toast ---- */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--accent);
+    color: var(--bg);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    z-index: 200;
+    opacity: 0;
+    transition: transform 0.25s, opacity 0.25s;
+    pointer-events: none;
+  }
+  #toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+<!-- Password gate -->
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <h1>My paintings</h1>
+    <p id="gate-msg">Enter password to continue</p>
+    <input id="gate-password" type="password" autocomplete="current-password" placeholder="Password" />
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button id="gate-submit" class="primary" style="flex:1;">Unlock</button>
+    </div>
+    <p id="gate-error" class="gate-error"></p>
+    <p class="hint" style="margin-top: 20px;">First time? Create a password below. No recovery — write it down somewhere safe.</p>
+  </div>
+</div>
+
+<!-- Main app -->
+<div id="app" class="hidden">
+  <div class="header">
+    <div>
+      <h1>My paintings</h1>
+      <p class="sub" id="collection-count">0 works</p>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <div class="menu-wrap">
+        <button id="menu-btn" class="icon-btn" aria-label="Menu">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+        <div id="menu" class="menu hidden">
+          <button id="menu-export"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Export backup</button>
+          <button id="menu-import"><svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Import backup</button>
+          <div class="divider"></div>
+          <button id="menu-change-pw"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Change password</button>
+          <button id="menu-lock"><svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Lock</button>
+        </div>
+      </div>
+      <button id="add-btn" class="primary icon-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Add
+      </button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="search" type="text" placeholder="Search by color, word, series, medium…" />
+    </div>
+    <button id="filter-btn" class="icon-btn">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+      Filter
+    </button>
+    <select id="sort-by" style="width: auto; min-width: 140px;">
+      <option value="newest">Newest first</option>
+      <option value="oldest">Oldest first</option>
+      <option value="title-asc">Title A–Z</option>
+      <option value="year-desc">Year (new→old)</option>
+      <option value="year-asc">Year (old→new)</option>
+    </select>
+    <div class="view-toggle">
+      <button id="view-grid" class="active" aria-label="Grid">
+        <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </button>
+      <button id="view-list" aria-label="List">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="filters-panel" class="filter-group hidden"></div>
+
+  <div id="results"></div>
+
+  <div class="storage-meter" id="storage-meter"></div>
+</div>
+
+<input id="import-file" type="file" accept="application/json" class="hidden" />
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   Painting Database PWA — single file, IndexedDB, image blobs
+   ============================================================ */
+
+// ---- Utility ----
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+function escapeHtml(s) {
+  if (s == null) return "";
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+function formatBytes(n) {
+  if (n < 1024) return n + " B";
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+  if (n < 1024 * 1024 * 1024) return (n / 1024 / 1024).toFixed(1) + " MB";
+  return (n / 1024 / 1024 / 1024).toFixed(2) + " GB";
+}
+
+// ---- Crypto for password ----
+const textEnc = new TextEncoder();
+
+async function hashPassword(password, salt) {
+  const saltBytes = salt || crypto.getRandomValues(new Uint8Array(16));
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw", textEnc.encode(password), "PBKDF2", false, ["deriveBits"]
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: saltBytes, iterations: 150000, hash: "SHA-256" },
+    keyMaterial, 256
+  );
+  return {
+    hash: btoa(String.fromCharCode(...new Uint8Array(bits))),
+    salt: btoa(String.fromCharCode(...saltBytes)),
+  };
+}
+
+function b64ToBytes(b64) {
+  return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+}
+
+async function verifyPassword(password, storedHash, storedSalt) {
+  const { hash } = await hashPassword(password, b64ToBytes(storedSalt));
+  return hash === storedHash;
+}
+
+// ---- IndexedDB ----
+const DB_NAME = "paintings_db";
+const DB_VERSION = 1;
+const STORE_PAINTINGS = "paintings";
+const STORE_IMAGES = "images";
+const STORE_META = "meta";
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => resolve(req.result);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_PAINTINGS)) {
+        const store = db.createObjectStore(STORE_PAINTINGS, { keyPath: "id" });
+        store.createIndex("createdAt", "createdAt");
+      }
+      if (!db.objectStoreNames.contains(STORE_IMAGES)) {
+        db.createObjectStore(STORE_IMAGES, { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains(STORE_META)) {
+        db.createObjectStore(STORE_META, { keyPath: "key" });
+      }
+    };
+  });
+}
+
+async function dbGetAll(store) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, "readonly");
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbGet(store, key) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, "readonly");
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbPut(store, value) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, "readwrite");
+    tx.objectStore(store).put(value);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function dbDelete(store, key) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, "readwrite");
+    tx.objectStore(store).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function dbClear(store) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, "readwrite");
+    tx.objectStore(store).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// ---- Image handling ----
+// Images are stored as Blobs in STORE_IMAGES, keyed by image ID.
+// Paintings reference image IDs in an array.
+// Object URLs are cached per session for rendering.
+
+const objectUrlCache = new Map(); // imageId -> objectURL
+
+async function getImageUrl(imageId) {
+  if (objectUrlCache.has(imageId)) return objectUrlCache.get(imageId);
+  const record = await dbGet(STORE_IMAGES, imageId);
+  if (!record) return null;
+  const url = URL.createObjectURL(record.blob);
+  objectUrlCache.set(imageId, url);
+  return url;
+}
+
+function revokeAllObjectUrls() {
+  for (const url of objectUrlCache.values()) URL.revokeObjectURL(url);
+  objectUrlCache.clear();
+}
+
+// Resize + compress an image file to a Blob
+async function processImageFile(file, maxDim = 1600, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("Could not encode image"));
+        }, "image/jpeg", quality);
+      };
+      img.onerror = () => reject(new Error("Could not load image"));
+      img.src = ev.target.result;
+    };
+    reader.onerror = () => reject(new Error("Could not read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveImageBlob(blob) {
+  const id = `img_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  await dbPut(STORE_IMAGES, { id, blob, size: blob.size, createdAt: new Date().toISOString() });
+  return id;
+}
+
+async function deleteImage(imageId) {
+  if (objectUrlCache.has(imageId)) {
+    URL.revokeObjectURL(objectUrlCache.get(imageId));
+    objectUrlCache.delete(imageId);
+  }
+  await dbDelete(STORE_IMAGES, imageId);
+}
+
+// ---- App state ----
+let state = {
+  paintings: [],
+  query: "",
+  viewMode: "grid",
+  filters: { category: "All", series: "All", status: "All" },
+  sortBy: "newest",
+  showFilters: false,
+};
+
+// ---- Gate ----
+const gateEl = document.getElementById("gate");
+const gateMsg = document.getElementById("gate-msg");
+const gatePw = document.getElementById("gate-password");
+const gateSubmit = document.getElementById("gate-submit");
+const gateError = document.getElementById("gate-error");
+const appEl = document.getElementById("app");
+
+let isSettingPassword = false;
+
+async function initGate() {
+  const stored = await dbGet(STORE_META, "password");
+  if (!stored) {
+    isSettingPassword = true;
+    gateMsg.textContent = "Create a password to protect your collection";
+    gateSubmit.textContent = "Create password";
+  } else {
+    isSettingPassword = false;
+    gateMsg.textContent = "Enter password to continue";
+    gateSubmit.textContent = "Unlock";
+  }
+  setTimeout(() => gatePw.focus(), 100);
+}
+
+gateSubmit.addEventListener("click", handleGateSubmit);
+gatePw.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") handleGateSubmit();
+});
+
+async function handleGateSubmit() {
+  const pw = gatePw.value;
+  if (!pw) { gateError.textContent = "Enter a password"; return; }
+  gateSubmit.disabled = true;
+  try {
+    if (isSettingPassword) {
+      if (pw.length < 4) {
+        gateError.textContent = "Password should be at least 4 characters";
+        return;
+      }
+      const { hash, salt } = await hashPassword(pw);
+      await dbPut(STORE_META, { key: "password", hash, salt });
+      await unlock();
+    } else {
+      const stored = await dbGet(STORE_META, "password");
+      const ok = await verifyPassword(pw, stored.hash, stored.salt);
+      if (!ok) {
+        gateError.textContent = "Wrong password";
+        gatePw.value = "";
+        return;
+      }
+      await unlock();
+    }
+  } finally {
+    gateSubmit.disabled = false;
+  }
+}
+
+async function unlock() {
+  gateError.textContent = "";
+  gatePw.value = "";
+  gateEl.classList.add("hidden");
+  appEl.classList.remove("hidden");
+  await loadPaintings();
+  await updateStorageMeter();
+}
+
+async function loadPaintings() {
+  state.paintings = await dbGetAll(STORE_PAINTINGS);
+  render();
+}
+
+// ---- Change password ----
+async function changePassword() {
+  const current = prompt("Enter your current password:");
+  if (current === null) return;
+  const stored = await dbGet(STORE_META, "password");
+  const ok = await verifyPassword(current, stored.hash, stored.salt);
+  if (!ok) { alert("Wrong password"); return; }
+  const next = prompt("Enter a new password (at least 4 characters):");
+  if (!next || next.length < 4) { alert("Password too short"); return; }
+  const confirm2 = prompt("Re-enter the new password:");
+  if (confirm2 !== next) { alert("Passwords don't match"); return; }
+  const { hash, salt } = await hashPassword(next);
+  await dbPut(STORE_META, { key: "password", hash, salt });
+  showToast("Password changed");
+}
+
+// ---- Lock ----
+function lock() {
+  revokeAllObjectUrls();
+  appEl.classList.add("hidden");
+  gateEl.classList.remove("hidden");
+  initGate();
+}
+
+// ---- Export / import ----
+async function exportBackup() {
+  showToast("Preparing backup…");
+  const paintings = await dbGetAll(STORE_PAINTINGS);
+  const images = await dbGetAll(STORE_IMAGES);
+
+  // Convert blobs to base64 for JSON
+  const imagesForExport = [];
+  for (const img of images) {
+    const b64 = await blobToBase64(img.blob);
+    imagesForExport.push({ id: img.id, dataUrl: b64, size: img.size, createdAt: img.createdAt });
+  }
+
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    paintings,
+    images: imagesForExport,
+  };
+  const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `paintings-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("Backup downloaded");
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(blob);
+  });
+}
+
+async function base64ToBlob(dataUrl) {
+  const res = await fetch(dataUrl);
+  return await res.blob();
+}
+
+const importFileEl = document.getElementById("import-file");
+importFileEl.addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  try {
+    showToast("Importing…");
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!Array.isArray(data.paintings)) throw new Error("Invalid backup file");
+
+    const merge = confirm(
+      `Import ${data.paintings.length} paintings?\n\n` +
+      `OK = MERGE with existing (duplicates skipped by ID)\n` +
+      `Cancel = REPLACE everything`
+    );
+    if (!merge) {
+      if (!confirm("This deletes all existing paintings AND images. Continue?")) {
+        e.target.value = ""; return;
+      }
+      await dbClear(STORE_PAINTINGS);
+      await dbClear(STORE_IMAGES);
+      revokeAllObjectUrls();
+    }
+
+    const existingIds = new Set(state.paintings.map(p => p.id));
+    for (const img of (data.images || [])) {
+      const blob = await base64ToBlob(img.dataUrl);
+      await dbPut(STORE_IMAGES, { id: img.id, blob, size: img.size, createdAt: img.createdAt });
+    }
+    for (const p of data.paintings) {
+      if (merge && existingIds.has(p.id)) continue;
+      await dbPut(STORE_PAINTINGS, p);
+    }
+    await loadPaintings();
+    await updateStorageMeter();
+    showToast("Import complete");
+  } catch (err) {
+    alert("Import failed: " + err.message);
+  }
+  e.target.value = "";
+});
+
+// ---- Storage meter ----
+async function updateStorageMeter() {
+  if (!navigator.storage?.estimate) return;
+  try {
+    const { usage, quota } = await navigator.storage.estimate();
+    const pct = ((usage / quota) * 100).toFixed(1);
+    document.getElementById("storage-meter").textContent =
+      `Storage: ${formatBytes(usage)} of ~${formatBytes(quota)} used (${pct}%)`;
+  } catch (e) { /* ignore */ }
+}
+
+// ---- Menu ----
+const menuBtn = document.getElementById("menu-btn");
+const menuEl = document.getElementById("menu");
+menuBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  menuEl.classList.toggle("hidden");
+});
+document.addEventListener("click", () => menuEl.classList.add("hidden"));
+document.getElementById("menu-export").addEventListener("click", exportBackup);
+document.getElementById("menu-import").addEventListener("click", () => importFileEl.click());
+document.getElementById("menu-change-pw").addEventListener("click", changePassword);
+document.getElementById("menu-lock").addEventListener("click", lock);
+
+// ---- Controls ----
+document.getElementById("search").addEventListener("input", (e) => {
+  state.query = e.target.value;
+  render();
+});
+document.getElementById("filter-btn").addEventListener("click", () => {
+  state.showFilters = !state.showFilters;
+  render();
+});
+document.getElementById("sort-by").addEventListener("change", (e) => {
+  state.sortBy = e.target.value;
+  render();
+});
+document.getElementById("view-grid").addEventListener("click", () => { state.viewMode = "grid"; render(); });
+document.getElementById("view-list").addEventListener("click", () => { state.viewMode = "list"; render(); });
+document.getElementById("add-btn").addEventListener("click", () => openForm(null));
+
+// ---- Filter / sort / search ----
+function uniqueValues(field) {
+  const set = new Set(state.paintings.map(p => p[field]).filter(Boolean));
+  return ["All", ...Array.from(set).sort()];
+}
+
+function getFiltered() {
+  let list = state.paintings.slice();
+
+  if (state.filters.category !== "All") list = list.filter(p => p.category === state.filters.category);
+  if (state.filters.series !== "All") list = list.filter(p => p.series === state.filters.series);
+  if (state.filters.status !== "All") list = list.filter(p => p.status === state.filters.status);
+
+  const q = state.query.trim().toLowerCase();
+  if (q) {
+    list = list.filter(p => {
+      const hay = [
+        p.title, p.year, p.medium, p.dimensions, p.category, p.series,
+        p.description, p.location, p.status, p.notes, p.buyer,
+        ...(p.colors || []), ...(p.tags || [])
+      ].filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  // Sort
+  switch (state.sortBy) {
+    case "newest":
+      list.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+      break;
+    case "oldest":
+      list.sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));
+      break;
+    case "title-asc":
+      list.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+      break;
+    case "year-desc":
+      list.sort((a, b) => (b.year || "").localeCompare(a.year || ""));
+      break;
+    case "year-asc":
+      list.sort((a, b) => (a.year || "").localeCompare(b.year || ""));
+      break;
+  }
+  return list;
+}
+
+// ---- Render ----
+const resultsEl = document.getElementById("results");
+const filtersPanel = document.getElementById("filters-panel");
+const countEl = document.getElementById("collection-count");
+
+function render() {
+  const total = state.paintings.length;
+  countEl.textContent = `${total} ${total === 1 ? "work" : "works"}`;
+
+  document.getElementById("view-grid").classList.toggle("active", state.viewMode === "grid");
+  document.getElementById("view-list").classList.toggle("active", state.viewMode === "list");
+
+  renderFilters();
+
+  const filtered = getFiltered();
+  if (filtered.length === 0) {
+    resultsEl.innerHTML = renderEmpty(total > 0);
+    const addBtn = resultsEl.querySelector("[data-add]");
+    if (addBtn) addBtn.addEventListener("click", () => openForm(null));
+    return;
+  }
+
+  if (state.viewMode === "grid") {
+    resultsEl.innerHTML = `<div class="grid">${filtered.map(renderGridCard).join("")}</div>`;
+  } else {
+    resultsEl.innerHTML = `<div class="list">${filtered.map(renderListCard).join("")}</div>`;
+  }
+
+  // Lazy-load images using stored image IDs
+  resultsEl.querySelectorAll("img[data-img-id]").forEach(async (img) => {
+    const url = await getImageUrl(img.dataset.imgId);
+    if (url) img.src = url;
+  });
+
+  resultsEl.querySelectorAll("[data-painting-id]").forEach(el => {
+    el.addEventListener("click", () => {
+      const p = state.paintings.find(x => x.id === el.dataset.paintingId);
+      if (p) openDetail(p);
+    });
+  });
+}
+
+function renderFilters() {
+  if (!state.showFilters) { filtersPanel.classList.add("hidden"); return; }
+  filtersPanel.classList.remove("hidden");
+
+  const cats = uniqueValues("category");
+  const series = uniqueValues("series");
+  const statuses = uniqueValues("status");
+
+  let html = "";
+  if (cats.length > 1) html += renderPillRow("Category", "category", cats, state.filters.category);
+  if (series.length > 1) html += renderPillRow("Series", "series", series, state.filters.series);
+  if (statuses.length > 1) html += renderPillRow("Status", "status", statuses, state.filters.status);
+
+  if (!html) html = `<div class="hint">Add paintings with categories, series, or status to filter them here.</div>`;
+  filtersPanel.innerHTML = html;
+
+  filtersPanel.querySelectorAll(".pill").forEach(b => {
+    b.addEventListener("click", () => {
+      const field = b.dataset.field;
+      const val = b.dataset.val;
+      state.filters[field] = val;
+      render();
+    });
+  });
+}
+
+function renderPillRow(label, field, values, current) {
+  return `
+    <div class="filter-row">
+      <span class="filter-label">${label}</span>
+      ${values.map(v => `
+        <button class="pill ${current === v ? 'active' : ''}" data-field="${field}" data-val="${escapeAttr(v)}">${escapeHtml(v)}</button>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderGridCard(p) {
+  const primaryImgId = (p.imageIds && p.imageIds[0]) || null;
+  const imgCount = p.imageIds?.length || 0;
+  return `
+    <div class="grid-item" data-painting-id="${escapeAttr(p.id)}">
+      <div class="grid-thumb">
+        ${primaryImgId
+          ? `<img data-img-id="${escapeAttr(primaryImgId)}" alt="${escapeAttr(p.title || 'Untitled')}" />`
+          : `<svg class="icon" style="width:28px;height:28px;color:var(--text-3);" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>`
+        }
+        ${imgCount > 1 ? `<span class="count-badge">
+          <svg class="icon" style="width:11px;height:11px;" viewBox="0 0 24 24"><rect x="2" y="2" width="14" height="14" rx="1"/><path d="M6 18h12a2 2 0 0 0 2-2V6"/></svg>
+          ${imgCount}
+        </span>` : ""}
+      </div>
+      <div class="grid-meta">
+        <p class="t1">${escapeHtml(p.title || "Untitled")}</p>
+        <p class="t2">${escapeHtml([p.year, p.medium].filter(Boolean).join(" · ") || "—")}</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderListCard(p) {
+  const primaryImgId = (p.imageIds && p.imageIds[0]) || null;
+  const statusClass = p.status?.toLowerCase() === "sold" ? "sold" :
+                       (p.status?.toLowerCase() === "available" ? "available" : "");
+  return `
+    <div class="list-item" data-painting-id="${escapeAttr(p.id)}">
+      <div class="list-thumb">
+        ${primaryImgId
+          ? `<img data-img-id="${escapeAttr(primaryImgId)}" alt="${escapeAttr(p.title || 'Untitled')}" />`
+          : `<svg class="icon" style="width:18px;height:18px;color:var(--text-3);" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>`
+        }
+      </div>
+      <div class="list-meta">
+        <p class="t1">${escapeHtml(p.title || "Untitled")}</p>
+        <p class="t2">${escapeHtml([p.year, p.medium, p.category, p.series, p.dimensions].filter(Boolean).join(" · ") || "—")}</p>
+        ${(p.status || p.series) ? `<div class="badges">
+          ${p.status ? `<span class="badge ${statusClass}">${escapeHtml(p.status)}</span>` : ""}
+        </div>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+function renderEmpty(hasAny) {
+  return `
+    <div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+      <p class="t1">${hasAny ? "No matches found" : "Your collection is empty"}</p>
+      <p class="t2">${hasAny ? "Try a different search or clear filters" : "Add your first painting to get started"}</p>
+      ${!hasAny ? `<button class="primary icon-btn" data-add><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add painting</button>` : ""}
+    </div>
+  `;
+}
+
+// ---- Detail view ----
+let currentDetailPainting = null;
+
+async function openDetail(p) {
+  currentDetailPainting = p;
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-header">
+        <div style="display:flex; gap:6px;">
+          <button id="d-edit" class="icon-btn">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Edit
+          </button>
+          <button id="d-delete" class="icon-btn danger">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+            Delete
+          </button>
+        </div>
+        <button id="d-close" class="icon-btn"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div id="d-content"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const close = () => { currentDetailPainting = null; overlay.remove(); };
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+  overlay.querySelector("#d-close").addEventListener("click", close);
+  overlay.querySelector("#d-edit").addEventListener("click", () => { close(); openForm(p); });
+  overlay.querySelector("#d-delete").addEventListener("click", async () => {
+    if (!confirm(`Delete "${p.title || 'Untitled'}"? This removes it and its images permanently.`)) return;
+    for (const imgId of (p.imageIds || [])) await deleteImage(imgId);
+    await dbDelete(STORE_PAINTINGS, p.id);
+    await loadPaintings();
+    await updateStorageMeter();
+    close();
+    showToast("Deleted");
+  });
+
+  const content = overlay.querySelector("#d-content");
+  content.innerHTML = await renderDetailContent(p);
+  wireDetailGallery(content, p);
+}
+
+async function renderDetailContent(p) {
+  const imgIds = p.imageIds || [];
+  let gallery = "";
+  if (imgIds.length > 0) {
+    gallery = `
+      <div class="image-gallery">
+        <div class="main-image-wrap">
+          <img id="main-img" data-img-id="${escapeAttr(imgIds[0])}" alt="${escapeAttr(p.title || '')}" />
+        </div>
+        ${imgIds.length > 1 ? `
+          <div class="thumb-strip">
+            ${imgIds.map((id, i) => `
+              <div class="thumb ${i === 0 ? 'active' : ''}" data-thumb-id="${escapeAttr(id)}">
+                <img data-img-id="${escapeAttr(id)}" alt="" />
+              </div>
+            `).join("")}
+          </div>
+        ` : ""}
+      </div>
+    `;
+  }
+
+  const rows = [];
+  if (p.category) rows.push(detailRow("Category", p.category, `<svg class="icon" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`));
+  if (p.series) rows.push(detailRow("Series", p.series, `<svg class="icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`));
+  if (p.dimensions) rows.push(detailRow("Dimensions", p.dimensions, `<svg class="icon" viewBox="0 0 24 24"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0z"/></svg>`));
+  if (p.status) rows.push(detailRow("Status", p.status, `<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`));
+  if (p.location) rows.push(detailRow("Location", p.location, `<svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`));
+  if (p.price) rows.push(detailRow("Price", p.price, `<svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`));
+  if (p.soldDate) rows.push(detailRow("Sold on", p.soldDate, `<svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`));
+  if (p.buyer) rows.push(detailRow("Buyer", p.buyer, `<svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`));
+
+  if (p.colors?.length) {
+    rows.push(`
+      <div class="detail-row">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        <span class="lbl">Colors</span>
+        <div class="detail-tags">
+          ${p.colors.map(c => `<span class="tag-chip">${escapeHtml(c)}</span>`).join("")}
+        </div>
+      </div>
+    `);
+  }
+  if (p.tags?.length) {
+    rows.push(`
+      <div class="detail-row">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <span class="lbl">Tags</span>
+        <div class="detail-tags">
+          ${p.tags.map(t => `<span class="tag-chip info">${escapeHtml(t)}</span>`).join("")}
+        </div>
+      </div>
+    `);
+  }
+
+  const body = `
+    <div class="modal-body">
+      <h2 class="detail-title">${escapeHtml(p.title || "Untitled")}</h2>
+      <p class="detail-subtitle">${escapeHtml([p.year, p.medium].filter(Boolean).join(" · "))}</p>
+      ${rows.join("")}
+      ${p.description ? `
+        <div class="detail-section">
+          <p class="lbl">Description</p>
+          <p class="body">${escapeHtml(p.description)}</p>
+        </div>
+      ` : ""}
+      ${p.notes ? `
+        <div class="detail-section">
+          <p class="lbl">Notes</p>
+          <p class="body">${escapeHtml(p.notes)}</p>
+        </div>
+      ` : ""}
+    </div>
+  `;
+
+  return gallery + body;
+}
+
+function detailRow(label, value, iconSvg) {
+  return `
+    <div class="detail-row">
+      ${iconSvg || ""}
+      <span class="lbl">${label}</span>
+      <span class="val">${escapeHtml(value)}</span>
+    </div>
+  `;
+}
+
+async function wireDetailGallery(container, p) {
+  // Load images
+  const imgs = container.querySelectorAll("img[data-img-id]");
+  for (const img of imgs) {
+    const url = await getImageUrl(img.dataset.imgId);
+    if (url) img.src = url;
+  }
+  // Thumb-strip switching
+  const mainImg = container.querySelector("#main-img");
+  container.querySelectorAll(".thumb[data-thumb-id]").forEach(thumb => {
+    thumb.addEventListener("click", async () => {
+      container.querySelectorAll(".thumb").forEach(t => t.classList.remove("active"));
+      thumb.classList.add("active");
+      const url = await getImageUrl(thumb.dataset.thumbId);
+      if (mainImg && url) mainImg.src = url;
+    });
+  });
+}
+
+// ---- Form ----
+const COMMON_MEDIUMS = ["Oil on canvas", "Oil on panel", "Acrylic on canvas", "Acrylic on panel", "Watercolor on paper", "Gouache on paper", "Ink on paper", "Pastel on paper", "Mixed media", "Digital"];
+const COMMON_STATUSES = ["Available", "Sold", "Reserved", "In progress", "Not for sale", "Gifted", "On display", "Stored"];
+
+async function openForm(existing) {
+  // draftImageIds lets us track images added during this form session,
+  // so we can clean up if the user cancels
+  const isNew = !existing;
+  const initial = existing ? { ...existing } : {
+    id: "", title: "", imageIds: [], year: "", medium: "", dimensions: "",
+    category: "", series: "", colors: [], tags: [],
+    description: "", location: "", status: "", price: "", soldDate: "", buyer: "",
+    notes: "", createdAt: ""
+  };
+
+  let form = { ...initial };
+  form.imageIds = [...(form.imageIds || [])];
+  const originalImageIds = [...form.imageIds];
+  const draftImageIds = []; // newly added during this session
+  const removedImageIds = []; // removed from an existing painting
+
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-header">
+        <h2>${isNew ? "New painting" : "Edit painting"}</h2>
+        <button id="f-close" class="icon-btn"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div>
+            <label class="field-label">Images</label>
+            <div id="f-image-thumbs" class="image-thumbs"></div>
+            <label class="image-upload-area" id="f-upload-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              <p id="f-upload-text">Tap to add images (main painting + detail shots)</p>
+              <p class="sub-hint">JPG, PNG, HEIC. Auto-resized to save space.</p>
+              <input type="file" accept="image/*" multiple style="display:none;" id="f-file-input" />
+            </label>
+          </div>
+
+          <div>
+            <label class="field-label">Title</label>
+            <input type="text" id="f-title" placeholder="Untitled" value="${escapeAttr(form.title)}" />
+          </div>
+
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Year</label>
+              <input type="text" id="f-year" placeholder="2024" value="${escapeAttr(form.year)}" />
+            </div>
+            <div>
+              <label class="field-label">Medium</label>
+              <input type="text" id="f-medium" list="mediums" placeholder="Oil on canvas" value="${escapeAttr(form.medium)}" />
+              <datalist id="mediums">${COMMON_MEDIUMS.map(m => `<option value="${escapeAttr(m)}"/>`).join("")}</datalist>
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Dimensions</label>
+              <input type="text" id="f-dimensions" placeholder='24" × 36" or 60 × 90 cm' value="${escapeAttr(form.dimensions)}" />
+            </div>
+            <div>
+              <label class="field-label">Category</label>
+              <input type="text" id="f-category" placeholder="Landscape, portrait, abstract…" value="${escapeAttr(form.category)}" />
+            </div>
+          </div>
+
+          <div>
+            <label class="field-label">Series / collection</label>
+            <input type="text" id="f-series" placeholder='e.g. "Coastal studies 2024"' value="${escapeAttr(form.series)}" />
+            <p class="hint">Group related works together</p>
+          </div>
+
+          <div>
+            <label class="field-label">Colors</label>
+            <input type="text" id="f-colors" placeholder="cerulean, burnt sienna, warm white" value="${escapeAttr((form.colors || []).join(', '))}" />
+            <p class="hint">Comma-separated. Be descriptive — these power your color search.</p>
+          </div>
+
+          <div>
+            <label class="field-label">Tags</label>
+            <input type="text" id="f-tags" placeholder="figurative, nocturne, experimental" value="${escapeAttr((form.tags || []).join(', '))}" />
+            <p class="hint">Comma-separated keywords</p>
+          </div>
+
+          <div class="form-row-2">
+            <div>
+              <label class="field-label">Status</label>
+              <input type="text" id="f-status" list="statuses" placeholder="Available, sold, in progress…" value="${escapeAttr(form.status)}" />
+              <datalist id="statuses">${COMMON_STATUSES.map(s => `<option value="${escapeAttr(s)}"/>`).join("")}</datalist>
+            </div>
+            <div>
+              <label class="field-label">Location</label>
+              <input type="text" id="f-location" placeholder="Studio, gallery, storage…" value="${escapeAttr(form.location)}" />
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <div>
+              <label class="field-label">Price / value</label>
+              <input type="text" id="f-price" placeholder="$2,400" value="${escapeAttr(form.price)}" />
+            </div>
+            <div>
+              <label class="field-label">Sold date</label>
+              <input type="text" id="f-sold-date" placeholder="2024-06-15" value="${escapeAttr(form.soldDate)}" />
+            </div>
+            <div>
+              <label class="field-label">Buyer / collector</label>
+              <input type="text" id="f-buyer" placeholder="Optional" value="${escapeAttr(form.buyer)}" />
+            </div>
+          </div>
+
+          <div>
+            <label class="field-label">Description</label>
+            <textarea id="f-description" placeholder="What the painting shows, subject matter, mood…" rows="3">${escapeHtml(form.description)}</textarea>
+          </div>
+
+          <div>
+            <label class="field-label">Notes</label>
+            <textarea id="f-notes" placeholder="Private notes, process, inspiration, exhibition history…" rows="2">${escapeHtml(form.notes)}</textarea>
+          </div>
+
+          <div class="form-actions">
+            <button id="f-cancel">Cancel</button>
+            <button id="f-save" class="primary">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  async function renderThumbs() {
+    const el = overlay.querySelector("#f-image-thumbs");
+    if (form.imageIds.length === 0) { el.innerHTML = ""; return; }
+    el.innerHTML = form.imageIds.map((id, i) => `
+      <div class="image-thumb-item ${i === 0 ? 'primary' : ''}" data-img-id="${escapeAttr(id)}">
+        ${i === 0 ? '<span class="primary-label">Main</span>' : ''}
+        <img data-img-id="${escapeAttr(id)}" alt="" />
+        <div class="actions always">
+          ${i > 0 ? `<button data-act="make-primary" data-id="${escapeAttr(id)}" title="Set as main">★</button>` : ''}
+          <button data-act="remove" data-id="${escapeAttr(id)}" title="Remove">✕</button>
+        </div>
+      </div>
+    `).join("");
+    // load images
+    for (const img of el.querySelectorAll("img[data-img-id]")) {
+      const url = await getImageUrl(img.dataset.imgId);
+      if (url) img.src = url;
+    }
+    el.querySelectorAll("button[data-act]").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        if (btn.dataset.act === "make-primary") {
+          form.imageIds = [id, ...form.imageIds.filter(x => x !== id)];
+        } else if (btn.dataset.act === "remove") {
+          form.imageIds = form.imageIds.filter(x => x !== id);
+          if (originalImageIds.includes(id) && !removedImageIds.includes(id)) {
+            removedImageIds.push(id);
+          }
+          // If it was a newly-added draft image, mark for cleanup
+          if (draftImageIds.includes(id)) {
+            const idx = draftImageIds.indexOf(id);
+            draftImageIds.splice(idx, 1);
+            deleteImage(id); // safe to delete now, not referenced
+          }
+        }
+        renderThumbs();
+      });
+    });
+  }
+
+  // File input
+  const fileInput = overlay.querySelector("#f-file-input");
+  const uploadLabel = overlay.querySelector("#f-upload-label");
+  const uploadText = overlay.querySelector("#f-upload-text");
+  uploadLabel.addEventListener("click", (e) => {
+    if (e.target.tagName !== "INPUT") { e.preventDefault(); fileInput.click(); }
+  });
+  fileInput.addEventListener("change", async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    uploadText.textContent = `Processing ${files.length} image${files.length > 1 ? 's' : ''}…`;
+    try {
+      for (const file of files) {
+        const blob = await processImageFile(file);
+        const id = await saveImageBlob(blob);
+        form.imageIds.push(id);
+        draftImageIds.push(id);
+      }
+      uploadText.textContent = "Tap to add more images";
+      await renderThumbs();
+    } catch (err) {
+      alert("Image upload failed: " + err.message);
+      uploadText.textContent = "Tap to add images";
+    }
+    fileInput.value = "";
+  });
+
+  renderThumbs();
+
+  const close = async (saved) => {
+    if (!saved) {
+      // Clean up newly-added draft images that weren't saved
+      for (const id of draftImageIds) {
+        if (form.imageIds.includes(id)) await deleteImage(id);
+      }
+    } else {
+      // Clean up removed images (only if save succeeded)
+      for (const id of removedImageIds) {
+        if (!form.imageIds.includes(id)) await deleteImage(id);
+      }
+    }
+    overlay.remove();
+  };
+
+  overlay.querySelector("#f-close").addEventListener("click", () => close(false));
+  overlay.querySelector("#f-cancel").addEventListener("click", () => close(false));
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(false); });
+
+  overlay.querySelector("#f-save").addEventListener("click", async () => {
+    const colors = overlay.querySelector("#f-colors").value.split(",").map(s => s.trim()).filter(Boolean);
+    const tags = overlay.querySelector("#f-tags").value.split(",").map(s => s.trim()).filter(Boolean);
+    const painting = {
+      id: form.id || `p_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      title: overlay.querySelector("#f-title").value.trim(),
+      imageIds: form.imageIds,
+      year: overlay.querySelector("#f-year").value.trim(),
+      medium: overlay.querySelector("#f-medium").value.trim(),
+      dimensions: overlay.querySelector("#f-dimensions").value.trim(),
+      category: overlay.querySelector("#f-category").value.trim(),
+      series: overlay.querySelector("#f-series").value.trim(),
+      colors, tags,
+      description: overlay.querySelector("#f-description").value.trim(),
+      location: overlay.querySelector("#f-location").value.trim(),
+      status: overlay.querySelector("#f-status").value.trim(),
+      price: overlay.querySelector("#f-price").value.trim(),
+      soldDate: overlay.querySelector("#f-sold-date").value.trim(),
+      buyer: overlay.querySelector("#f-buyer").value.trim(),
+      notes: overlay.querySelector("#f-notes").value.trim(),
+      createdAt: form.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await dbPut(STORE_PAINTINGS, painting);
+    await close(true);
+    await loadPaintings();
+    await updateStorageMeter();
+    showToast(form.id ? "Updated" : "Painting added");
+  });
+}
+
+// ---- Boot ----
+window.addEventListener("load", async () => {
+  // Register service worker for offline support
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+  // Request persistent storage (prevents eviction)
+  if (navigator.storage?.persist) {
+    try { await navigator.storage.persist(); } catch (e) {}
+  }
+  await initGate();
+});
+</script>
+</body>
+</html>
